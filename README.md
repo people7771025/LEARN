@@ -22,7 +22,7 @@
 
 ## 線上版
 
-部署後入口網址：
+入口網址：
 
 - <https://people7771025.github.io/LEARN/>
 

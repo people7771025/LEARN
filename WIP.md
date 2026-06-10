@@ -4,7 +4,8 @@
 
 ## 現在狀態
 
-- 新專案 `$HOME/Dev/LEARN` 已建立，本機 git repo：`main`，目前尚未設定 remote。
+- 專案 `$HOME/Dev/LEARN` 已建立，本機 git repo：`main`，remote：`https://github.com/people7771025/LEARN.git`。
+- GitHub Pages 已啟用：<https://people7771025.github.io/LEARN/>
 - 單檔 `index.html`，離線可開。
 - 已納入三個教學系統：
   - FIN：財報判讀
@@ -35,9 +36,8 @@
 ## 下一步
 
 1. 若未來新增教學專案，將該專案加到 `COURSES` 陣列。
-2. 若要部署，建立 GitHub remote 後推送並啟用 GitHub Pages。
-3. 若要跨專案同步進度，需要先統一 localStorage key 或改為後端儲存；目前刻意不做，避免破壞各專案獨立性。
+2. 若要跨專案同步進度，需要先統一 localStorage key 或改為後端儲存；目前刻意不做，避免破壞各專案獨立性。
 
 ## 卡點
 
-- 無 remote，暫時只能本機 commit，不能 push。
+- 無卡點。
