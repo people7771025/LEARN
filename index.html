@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LEARN 教學系統入口</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --bg: #f6f7f8;
+      --panel: #ffffff;
+      --panel-2: #eef2f6;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #d6dde6;
+      --dark: #111827;
+      --teal: #0f766e;
+      --teal-soft: #dff3ef;
+      --blue: #2563eb;
+      --blue-soft: #e7efff;
+      --red: #be123c;
+      --red-soft: #fde7ee;
+      --amber: #b45309;
+      --amber-soft: #fff1d6;
+      --radius: 8px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+    .app {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 18px;
+      background: var(--dark);
+      color: #f8fafc;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: #f8fafc;
+      color: var(--dark);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-family: var(--mono);
+    }
+    .brand h1 { margin: 0; font-size: 22px; line-height: 1; }
+    .brand p { margin: 4px 0 0; color: #cbd5e1; font-size: 12px; }
+    .side-label {
+      margin: 18px 0 8px;
+      color: #9ca3af;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .search {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      padding: 10px 12px;
+    }
+    .search::placeholder { color: #aeb8c8; }
+    .seg {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+    }
+    .seg button {
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      padding: 9px 11px;
+      background: rgba(255,255,255,.05);
+      color: #e5e7eb;
+      font-weight: 800;
+    }
+    .seg button.active {
+      border-color: #5eead4;
+      background: rgba(45,212,191,.13);
+      color: #fff;
+    }
+    .side-stat {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .side-stat div {
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.05);
+    }
+    .side-stat b { display: block; font-size: 21px; font-family: var(--mono); color: #fff; }
+    .side-stat span { color: #cbd5e1; font-size: 11px; }
+    .notice {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(251,191,36,.35);
+      background: rgba(251,191,36,.10);
+      color: #fde68a;
+      font-size: 12px;
+    }
+    main {
+      min-width: 0;
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      margin-bottom: 18px;
+      align-items: stretch;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .intro h2 { margin: 0; font-size: 28px; }
+    .intro p { margin: 8px 0 0; color: var(--muted); max-width: 78ch; }
+    .quick-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 8px 11px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .btn.blue { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn.warn { background: var(--amber-soft); border-color: #f1c27d; color: #7c3e08; }
+    .btn:disabled, .btn.disabled { opacity: .55; cursor: not-allowed; pointer-events: none; }
+    .map {
+      display: grid;
+      align-content: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .map svg { width: 100%; height: 150px; display: block; }
+    .map-caption { color: var(--muted); font-size: 12px; }
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+    .panel h2, .panel h3 { margin: 0; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      background: var(--teal-soft);
+      color: var(--teal);
+    }
+    .course-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .course-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .course-card.active {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px var(--blue-soft);
+    }
+    .course-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+    .course-code {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-weight: 900;
+      color: #fff;
+      flex: 0 0 auto;
+    }
+    .course-title { font-size: 20px; font-weight: 900; line-height: 1.2; }
+    .course-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 9px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .card-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .detail-title {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .detail-title h2 { font-size: 25px; }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .metric {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-2);
+    }
+    .metric b { display: block; font-size: 19px; font-family: var(--mono); }
+    .metric span { color: var(--muted); font-size: 12px; }
+    .section-block {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+    .route-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .route-step {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+    .route-step b {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-family: var(--mono);
+    }
+    .route-step strong { display: block; }
+    .route-step span { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .compare-item {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--panel-2);
+    }
+    .compare-item b { display: block; margin-bottom: 4px; }
+    .compare-item span { color: var(--muted); font-size: 13px; }
+    textarea {
+      width: 100%;
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      resize: vertical;
+      background: #fff;
+      color: var(--ink);
+      margin-top: 10px;
+    }
+    @media (max-width: 1080px) {
+      .app { grid-template-columns: 1fr; }
+      aside { position: relative; height: auto; }
+      .top, .dashboard { grid-template-columns: 1fr; }
+      .seg {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .seg button { min-width: 150px; }
+    }
+    @media (max-width: 640px) {
+      main { padding: 14px; }
+      .intro h2 { font-size: 23px; }
+      .course-top, .panel-head { display: block; }
+      .course-code { margin-bottom: 8px; }
+      .detail-grid, .compare { grid-template-columns: 1fr; }
+      .card-actions .btn, .quick-row .btn { width: 100%; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #172033;
+        --panel-2: #111827;
+        --ink: #f8fafc;
+        --muted: #b5c0d0;
+        --line: #2f3b52;
+        --teal-soft: #123b36;
+        --blue-soft: #172c58;
+        --red-soft: #4a1524;
+        --amber-soft: #3a2713;
+      }
+      .chip, textarea { background: #0f172a; color: var(--ink); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">LH</div>
+        <div>
+          <h1>LEARN</h1>
+          <p>所有教學系統入口</p>
+        </div>
+      </div>
+
+      <div class="side-label">Search</div>
+      <input class="search" id="search" type="search" placeholder="搜尋：財報、期權、日檢...">
+
+      <div class="side-label">Goal</div>
+      <div class="seg" id="filters"></div>
+
+      <div class="side-label">Library</div>
+      <div class="side-stat">
+        <div><b id="stat-courses">0</b><span>教學系統</span></div>
+        <div><b id="stat-domains">0</b><span>學習領域</span></div>
+        <div><b id="stat-hours">0</b><span>完整時數</span></div>
+        <div><b id="stat-routes">0</b><span>考試/實戰路線</span></div>
+      </div>
+      <div class="notice">本入口只做選課與導覽；各課程進度仍保存在原本專案自己的瀏覽器 localStorage。</div>
+    </aside>
+
+    <main>
+      <section class="top">
+        <div class="panel intro">
+          <h2>選擇今天要學什麼</h2>
+          <p>這裡是 FIN、OPT、LANG 的統一入口。先依目標篩選，再進入對應教學系統；每個系統仍維持單檔 HTML、離線可開、可獨立更新。</p>
+          <div class="quick-row" id="quick-actions"></div>
+        </div>
+        <div class="panel map" aria-label="Learning map">
+          <svg viewBox="0 0 320 160" role="img" aria-label="FIN OPT LANG learning map">
+            <rect x="10" y="16" width="300" height="128" rx="8" fill="var(--panel-2)" stroke="var(--line)"/>
+            <path d="M68 80 H150 H244" fill="none" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="68" cy="80" r="29" fill="var(--teal)"/>
+            <circle cx="160" cy="80" r="29" fill="var(--blue)"/>
+            <circle cx="252" cy="80" r="29" fill="var(--red)"/>
+            <text x="68" y="86" fill="#fff" font-size="17" font-family="monospace" text-anchor="middle" font-weight="800">FIN</text>
+            <text x="160" y="86" fill="#fff" font-size="17" font-family="monospace" text-anchor="middle" font-weight="800">OPT</text>
+            <text x="252" y="86" fill="#fff" font-size="17" font-family="monospace" text-anchor="middle" font-weight="800">LANG</text>
+            <text x="24" y="36" fill="var(--muted)" font-size="12" font-family="monospace">choose path</text>
+            <text x="214" y="132" fill="var(--muted)" font-size="12" font-family="monospace">learn / test / repeat</text>
+          </svg>
+          <div class="map-caption">入口頁不取代課程內容；它負責把學習者帶到正確的系統。</div>
+        </div>
+      </section>
+
+      <section class="dashboard">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>教學系統</h2>
+              <p id="result-label">全部課程</p>
+            </div>
+            <span class="badge" id="result-count">0 items</span>
+          </div>
+          <div class="course-grid" id="course-grid"></div>
+        </div>
+
+        <div class="panel" id="detail-panel">
+          <div class="detail-title">
+            <div class="course-code" id="detail-code">--</div>
+            <div>
+              <h2 id="detail-title">選一個教學系統</h2>
+              <p class="course-sub" id="detail-sub">左側選課後會顯示完整路線與開啟方式。</p>
+            </div>
+          </div>
+          <div class="detail-grid">
+            <div class="metric"><b id="detail-scope">--</b><span>章節/模組</span></div>
+            <div class="metric"><b id="detail-time">--</b><span>完整學習時間</span></div>
+            <div class="metric"><b id="detail-status">--</b><span>狀態</span></div>
+          </div>
+          <div class="card-actions" id="detail-actions"></div>
+          <div class="section-block">
+            <h3>適合目標</h3>
+            <p class="course-sub" id="detail-outcome"></p>
+            <div class="meta" id="detail-tags"></div>
+          </div>
+          <div class="section-block">
+            <h3>建議學習路線</h3>
+            <div class="route-list" id="route-list"></div>
+          </div>
+          <div class="section-block">
+            <h3>三套系統怎麼分工</h3>
+            <div class="compare" id="compare-grid"></div>
+          </div>
+          <div class="section-block">
+            <button class="btn primary" id="copy-plan">Copy selected path as Markdown</button>
+            <textarea id="export-box" readonly placeholder="複製的學習路線會出現在這裡。"></textarea>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+
+    const COURSES = [
+      {
+        id: "fin",
+        code: "FIN",
+        title: "財報判讀自學系統",
+        subtitle: "台股與美股財報，從三大報表到產業指標、地雷排查與個股走查。",
+        category: "investing",
+        categoryLabel: "投資分析",
+        color: "#0f766e",
+        localUrl: "../FIN/index.html",
+        onlineUrl: "https://people7771025.github.io/FIN/",
+        scope: "8 Parts",
+        hours: 40,
+        status: "完成",
+        routes: 3,
+        outcome: "想看懂公司財報、建立選股體檢 SOP、避免只看 EPS 或新聞做判斷。",
+        tags: ["財報", "股票", "美股", "台股", "估值", "產業比較", "地雷檢查", "Worksheet", "Quiz"],
+        steps: [
+          ["快速看懂", "先跑 Part I + Part III + 決策 checklist，建立財報紅旗直覺。"],
+          ["完整理解", "補齊比率、產業差異、台美制度與個股案例。"],
+          ["實戰走查", "用 Worksheet 跑一家公司，完成紅旗、估值與結論。"]
+        ]
+      },
+      {
+        id: "opt",
+        code: "OPT",
+        title: "美股期權 + 台股期貨自學系統",
+        subtitle: "衍生品、Greeks、IV、策略選擇、交易前 Gate 與交易日誌。",
+        category: "trading",
+        categoryLabel: "交易風控",
+        color: "#2563eb",
+        localUrl: "../OPT/index.html",
+        onlineUrl: "https://people7771025.github.io/OPT/",
+        scope: "36 Ch",
+        hours: 60,
+        status: "完成",
+        routes: 3,
+        outcome: "想理解期權/期貨工具、避險與風險預算，並避免在不懂結構時直接交易。",
+        tags: ["Options", "Futures", "選擇權", "期貨", "Greeks", "IV", "No-Go Gate", "Journal"],
+        steps: [
+          ["先懂工具", "從 payoff、權利金、Greeks、IV 與期貨保證金開始。"],
+          ["策略選擇", "用 StrategyPicker 與 PreTradeChecklist 練 Go / No-Go。"],
+          ["紀錄復盤", "用 TradeJournal 記錄策略、風險、結果與檢討。"]
+        ]
+      },
+      {
+        id: "lang",
+        code: "LANG",
+        title: "美語與日語考試自學系統",
+        subtitle: "英文對準 GEPT 高級/TOEFL/IELTS，日文對準 JLPT N2+，含聽力實驗室。",
+        category: "language",
+        categoryLabel: "語言考試",
+        color: "#be123c",
+        localUrl: "../LANG/index.html",
+        onlineUrl: "",
+        scope: "96 Exam Ch + 80 Listening",
+        hours: 520,
+        status: "本機完成",
+        routes: 2,
+        outcome: "想走完整語言考試流程：英文達 C1/TOEFL/IELTS 目標，日文至少通過 N2 並銜接 N1。",
+        tags: ["GEPT C1", "全民英檢", "TOEFL", "托福", "IELTS", "雅思", "JLPT N2", "日檢", "Listening", "Dictation"],
+        steps: [
+          ["診斷", "先跑英語或日語的考試通關路線 Gate 1，建立錯誤本。"],
+          ["分科訓練", "依聽讀寫說或語彙文法讀解聽解逐章完成門檻。"],
+          ["模考補弱", "連續模考達標後才進正式考試。"]
+        ]
+      }
+    ];
+
+    const FILTERS = [
+      { id: "all", label: "全部教學" },
+      { id: "investing", label: "投資分析" },
+      { id: "trading", label: "交易風控" },
+      { id: "language", label: "語言考試" }
+    ];
+
+    const COMPARE = [
+      ["FIN", "判斷公司體質與估值，適合建立投資基本功。"],
+      ["OPT", "理解衍生品與風險，適合交易前決策與復盤。"],
+      ["LANG", "長週期考試訓練，適合需要明確分數或證照目標。"]
+    ];
+
+    const state = {
+      filter: "all",
+      query: "",
+      selected: "fin"
+    };
+
+    function filteredCourses() {
+      const q = state.query.trim().toLowerCase();
+      return COURSES.filter(c => {
+        const inFilter = state.filter === "all" || c.category === state.filter;
+        const haystack = [c.code, c.title, c.subtitle, c.categoryLabel, c.outcome, ...c.tags].join(" ").toLowerCase();
+        return inFilter && (!q || haystack.includes(q));
+      });
+    }
+
+    function render() {
+      renderStats();
+      renderFilters();
+      renderQuickActions();
+      renderCourses();
+      renderDetail();
+    }
+
+    function renderStats() {
+      document.getElementById("stat-courses").textContent = COURSES.length;
+      document.getElementById("stat-domains").textContent = new Set(COURSES.map(c => c.category)).size;
+      document.getElementById("stat-hours").textContent = COURSES.reduce((sum, c) => sum + c.hours, 0) + "h";
+      document.getElementById("stat-routes").textContent = COURSES.reduce((sum, c) => sum + c.routes, 0);
+    }
+
+    function renderFilters() {
+      const wrap = document.getElementById("filters");
+      wrap.innerHTML = FILTERS.map(f => `<button class="${state.filter === f.id ? "active" : ""}" data-filter="${f.id}">${f.label}</button>`).join("");
+      wrap.querySelectorAll("[data-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.filter = btn.dataset.filter;
+          const list = filteredCourses();
+          if (!list.some(c => c.id === state.selected) && list[0]) state.selected = list[0].id;
+          render();
+        });
+      });
+    }
+
+    function renderQuickActions() {
+      const selected = course();
+      document.getElementById("quick-actions").innerHTML = `
+        <a class="btn primary" href="${selected.localUrl}" target="_blank" rel="noreferrer">Open ${selected.code}</a>
+        <button class="btn" data-select="fin">財報</button>
+        <button class="btn" data-select="opt">期權/期貨</button>
+        <button class="btn" data-select="lang">語言考試</button>
+      `;
+      document.querySelectorAll("[data-select]").forEach(btn => btn.addEventListener("click", () => {
+        state.selected = btn.dataset.select;
+        state.filter = "all";
+        render();
+      }));
+    }
+
+    function renderCourses() {
+      const list = filteredCourses();
+      const label = FILTERS.find(f => f.id === state.filter)?.label || "全部教學";
+      document.getElementById("result-label").textContent = label + (state.query ? " / 搜尋：" + state.query : "");
+      document.getElementById("result-count").textContent = list.length + " items";
+      const grid = document.getElementById("course-grid");
+      grid.innerHTML = list.length ? list.map(c => `
+        <article class="course-card ${state.selected === c.id ? "active" : ""}">
+          <div class="course-top">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div class="course-code" style="background:${c.color}">${c.code}</div>
+              <div>
+                <div class="course-title">${c.title}</div>
+                <div class="course-sub">${c.subtitle}</div>
+              </div>
+            </div>
+            <span class="badge">${c.categoryLabel}</span>
+          </div>
+          <div class="meta">
+            <span class="chip">${c.scope}</span>
+            <span class="chip">${c.hours}h</span>
+            <span class="chip">${c.status}</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn blue" data-open-detail="${c.id}">查看路線</button>
+            <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">本機開啟</a>
+            ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">線上版</a>` : `<span class="btn disabled">尚無線上版</span>`}
+          </div>
+        </article>
+      `).join("") : `<div class="course-card"><div class="course-title">找不到符合條件的教學系統</div><div class="course-sub">換一個關鍵字或選回全部教學。</div></div>`;
+      grid.querySelectorAll("[data-open-detail]").forEach(btn => btn.addEventListener("click", () => {
+        state.selected = btn.dataset.openDetail;
+        render();
+      }));
+    }
+
+    function course() {
+      return COURSES.find(c => c.id === state.selected) || COURSES[0];
+    }
+
+    function renderDetail() {
+      const c = course();
+      const code = document.getElementById("detail-code");
+      code.textContent = c.code;
+      code.style.background = c.color;
+      document.getElementById("detail-title").textContent = c.title;
+      document.getElementById("detail-sub").textContent = c.subtitle;
+      document.getElementById("detail-scope").textContent = c.scope;
+      document.getElementById("detail-time").textContent = c.hours + "h";
+      document.getElementById("detail-status").textContent = c.status;
+      document.getElementById("detail-outcome").textContent = c.outcome;
+      document.getElementById("detail-tags").innerHTML = c.tags.map(t => `<span class="chip">${t}</span>`).join("");
+      document.getElementById("detail-actions").innerHTML = `
+        <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">本機開啟 ${c.code}</a>
+        ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">線上版</a>` : `<span class="btn disabled">尚無線上版</span>`}
+        <button class="btn warn" data-copy-single="${c.id}">複製路線</button>
+      `;
+      document.getElementById("route-list").innerHTML = c.steps.map((s, idx) => `
+        <div class="route-step">
+          <b>${idx + 1}</b>
+          <div><strong>${s[0]}</strong><span>${s[1]}</span></div>
+        </div>
+      `).join("");
+      document.getElementById("compare-grid").innerHTML = COMPARE.map(item => `
+        <div class="compare-item"><b>${item[0]}</b><span>${item[1]}</span></div>
+      `).join("");
+      document.querySelector("[data-copy-single]").addEventListener("click", copyPlan);
+    }
+
+    function copyPlan() {
+      const c = course();
+      const lines = [];
+      lines.push("# LEARN 選課路線");
+      lines.push("");
+      lines.push(`- 選擇：${c.code} ${c.title}`);
+      lines.push(`- 目標：${c.outcome}`);
+      lines.push(`- 範圍：${c.scope}`);
+      lines.push(`- 完整時間：${c.hours}h`);
+      lines.push(`- 本機入口：${c.localUrl}`);
+      if (c.onlineUrl) lines.push(`- 線上版：${c.onlineUrl}`);
+      lines.push("");
+      lines.push("## 建議步驟");
+      c.steps.forEach((s, idx) => lines.push(`${idx + 1}. ${s[0]}：${s[1]}`));
+      lines.push("");
+      lines.push("## 標籤");
+      lines.push(c.tags.map(t => `\`${t}\``).join(" "));
+      const md = lines.join("\n");
+      const box = document.getElementById("export-box");
+      box.value = md;
+      box.focus();
+      box.select();
+      if (navigator.clipboard) navigator.clipboard.writeText(md).catch(() => {});
+    }
+
+    document.getElementById("search").addEventListener("input", e => {
+      state.query = e.target.value;
+      const list = filteredCourses();
+      if (!list.some(c => c.id === state.selected) && list[0]) state.selected = list[0].id;
+      render();
+    });
+    document.getElementById("copy-plan").addEventListener("click", copyPlan);
+
+    render();
+  </script>
+</body>
+</html>
