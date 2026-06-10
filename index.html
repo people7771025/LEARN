@@ -535,7 +535,7 @@
         categoryLabel: "語言考試",
         color: "#be123c",
         localUrl: "../LANG/index.html",
-        onlineUrl: "",
+        onlineUrl: "https://people7771025.github.io/LANG/",
         scope: "96 Exam Ch + 80 Listening",
         hours: 520,
         status: "本機完成",
@@ -646,8 +646,8 @@
           </div>
           <div class="card-actions">
             <button class="btn blue" data-open-detail="${c.id}">查看路線</button>
-            <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">本機開啟</a>
-            ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">線上版</a>` : `<span class="btn disabled">尚無線上版</span>`}
+            <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">開啟課程</a>
+            ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
           </div>
         </article>
       `).join("") : `<div class="course-card"><div class="course-title">找不到符合條件的教學系統</div><div class="course-sub">換一個關鍵字或選回全部教學。</div></div>`;
@@ -674,8 +674,8 @@
       document.getElementById("detail-outcome").textContent = c.outcome;
       document.getElementById("detail-tags").innerHTML = c.tags.map(t => `<span class="chip">${t}</span>`).join("");
       document.getElementById("detail-actions").innerHTML = `
-        <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">本機開啟 ${c.code}</a>
-        ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">線上版</a>` : `<span class="btn disabled">尚無線上版</span>`}
+        <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">開啟 ${c.code}</a>
+        ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
         <button class="btn warn" data-copy-single="${c.id}">複製路線</button>
       `;
       document.getElementById("route-list").innerHTML = c.steps.map((s, idx) => `

@@ -10,7 +10,7 @@
 
 1. 直接打開 `index.html`
 2. 用左側搜尋或目標篩選選擇想學的主題
-3. 點「本機開啟」進入對應專案
+3. 點「開啟課程」進入對應專案
 
 入口頁使用相對連結：
 
@@ -19,6 +19,18 @@
 - `../LANG/index.html`
 
 因此建議直接從檔案系統開啟 `LEARN/index.html`。
+
+## 線上版
+
+部署後入口網址：
+
+- <https://people7771025.github.io/LEARN/>
+
+課程固定網址：
+
+- FIN：<https://people7771025.github.io/FIN/>
+- OPT：<https://people7771025.github.io/OPT/>
+- LANG：<https://people7771025.github.io/LANG/>
 
 ## 範圍
 

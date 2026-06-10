@@ -50,7 +50,7 @@
 
 - FIN：`../FIN/index.html`，線上版 `https://people7771025.github.io/FIN/`
 - OPT：`../OPT/index.html`，線上版 `https://people7771025.github.io/OPT/`
-- LANG：`../LANG/index.html`，目前無線上版
+- LANG：`../LANG/index.html`，線上版 `https://people7771025.github.io/LANG/`
 
 ## 注意
 
