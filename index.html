@@ -227,6 +227,16 @@
       border-color: var(--blue);
       box-shadow: 0 0 0 2px var(--blue-soft);
     }
+    .empty-state {
+      text-align: center;
+      padding: 32px 18px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: transparent;
+    }
+    .empty-state b { display: block; font-weight: 800; margin-bottom: 4px; }
+    .empty-state span { font-size: 13px; }
     .course-top {
       display: flex;
       justify-content: space-between;
@@ -343,6 +353,39 @@
       color: var(--ink);
       margin-top: 10px;
     }
+
+    /* --- Interaction feedback (visual only): hover / active --- */
+    .btn,
+    .seg button,
+    .chip,
+    .course-card {
+      transition: background-color .15s, border-color .15s, box-shadow .15s, filter .15s, transform .05s;
+    }
+    .btn:not(:disabled):not(.disabled):hover { border-color: var(--muted); }
+    .btn.primary:not(:disabled):hover,
+    .btn.blue:not(:disabled):hover,
+    .btn.warn:not(:disabled):hover { filter: brightness(1.06); }
+    .seg button:not(.active):hover {
+      border-color: rgba(255,255,255,.28);
+      background: rgba(255,255,255,.10);
+    }
+    .course-card:not(.active):hover { border-color: var(--muted); }
+    .btn:not(:disabled):not(.disabled):active { transform: translateY(1px); }
+    .seg button:active { transform: translateY(1px); }
+
+    /* --- Keyboard focus ring (WCAG 2.4.7), keyboard-only via :focus-visible --- */
+    .btn:focus-visible,
+    a.btn:focus-visible,
+    .course-card:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+    .search:focus-visible,
+    .seg button:focus-visible {
+      outline: 2px solid #5eead4;
+      outline-offset: 2px;
+    }
+
     @media (max-width: 1080px) {
       .app { grid-template-columns: 1fr; }
       aside { position: relative; height: auto; }
@@ -383,20 +426,20 @@
   <div class="app">
     <aside>
       <div class="brand">
-        <div class="brand-mark">LH</div>
+        <div class="brand-mark">L</div>
         <div>
           <h1>LEARN</h1>
           <p>所有教學系統入口</p>
         </div>
       </div>
 
-      <div class="side-label">Search</div>
-      <input class="search" id="search" type="search" placeholder="搜尋：財報、期權、日檢...">
+      <label class="side-label" for="search">搜尋</label>
+      <input class="search" id="search" type="search" aria-label="搜尋教學系統" placeholder="搜尋：財報、期權、日檢...">
 
-      <div class="side-label">Goal</div>
-      <div class="seg" id="filters"></div>
+      <div class="side-label" id="filters-label">目標</div>
+      <div class="seg" id="filters" role="group" aria-labelledby="filters-label"></div>
 
-      <div class="side-label">Library</div>
+      <div class="side-label">課程庫</div>
       <div class="side-stat">
         <div><b id="stat-courses">0</b><span>教學系統</span></div>
         <div><b id="stat-domains">0</b><span>學習領域</span></div>
@@ -437,7 +480,7 @@
               <h2>教學系統</h2>
               <p id="result-label">全部課程</p>
             </div>
-            <span class="badge" id="result-count">0 items</span>
+            <span class="badge" id="result-count" role="status" aria-live="polite">0 items</span>
           </div>
           <div class="course-grid" id="course-grid"></div>
         </div>
@@ -470,7 +513,7 @@
             <div class="compare" id="compare-grid"></div>
           </div>
           <div class="section-block">
-            <button class="btn primary" id="copy-plan">Copy selected path as Markdown</button>
+            <button class="btn primary" id="copy-plan">複製路線</button>
             <textarea id="export-box" readonly placeholder="複製的學習路線會出現在這裡。"></textarea>
           </div>
         </div>
@@ -609,7 +652,7 @@
     function renderQuickActions() {
       const selected = course();
       document.getElementById("quick-actions").innerHTML = `
-        ${selected ? `<a class="btn primary" href="${selected.localUrl}" target="_blank" rel="noreferrer">Open ${selected.code}</a>` : ""}
+        ${selected ? `<a class="btn primary" href="${selected.localUrl}" target="_blank" rel="noreferrer">開啟 ${selected.code}</a>` : ""}
         <button class="btn" data-select="fin">財報</button>
         <button class="btn" data-select="opt">期權/期貨</button>
         <button class="btn" data-select="lang">語言考試</button>
@@ -617,6 +660,9 @@
       document.querySelectorAll("[data-select]").forEach(btn => btn.addEventListener("click", () => {
         state.selected = btn.dataset.select;
         state.filter = "all";
+        state.query = "";
+        const search = document.getElementById("search");
+        if (search) search.value = "";
         render();
       }));
     }
@@ -628,7 +674,7 @@
       document.getElementById("result-count").textContent = list.length + " items";
       const grid = document.getElementById("course-grid");
       grid.innerHTML = list.length ? list.map(c => `
-        <article class="course-card ${state.selected === c.id ? "active" : ""}">
+        <article class="course-card ${state.selected === c.id ? "active" : ""}"${state.selected === c.id ? ' aria-current="true"' : ""}>
           <div class="course-top">
             <div style="display:flex;gap:12px;align-items:flex-start;">
               <div class="course-code" style="background:${c.color}">${c.code}</div>
@@ -650,7 +696,7 @@
             ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
           </div>
         </article>
-      `).join("") : `<div class="course-card"><div class="course-title">找不到符合條件的教學系統</div><div class="course-sub">換一個關鍵字或選回全部教學。</div></div>`;
+      `).join("") : `<div class="empty-state"><b>找不到符合條件的教學系統</b><span>換一個關鍵字或選回全部教學。</span></div>`;
       grid.querySelectorAll("[data-open-detail]").forEach(btn => btn.addEventListener("click", () => {
         state.selected = btn.dataset.openDetail;
         render();
@@ -659,7 +705,8 @@
 
     function course() {
       if (state.selected === null) return null;
-      return COURSES.find(c => c.id === state.selected) || COURSES[0];
+      const found = COURSES.find(c => c.id === state.selected);
+      return found || null;
     }
 
     function renderDetail() {
