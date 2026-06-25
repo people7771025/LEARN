@@ -6,419 +6,734 @@
   <title>LEARN 教學系統入口</title>
   <link rel="icon" href="data:,">
   <style>
+    /* =========================================================
+       LEARN — visual redesign (preview)
+       Editorial / institutional restraint.
+       - One restrained accent + neutral ink, no rainbow fills.
+       - Real type scale + 8pt spacing rhythm via CSS variables.
+       - Inline line icons instead of emoji/decorative blobs.
+       Functionality, IDs, data and JS behaviour are unchanged.
+       ========================================================= */
     :root {
-      --bg: #f6f7f8;
-      --panel: #ffffff;
-      --panel-2: #eef2f6;
-      --ink: #111827;
-      --muted: #64748b;
-      --line: #d6dde6;
-      --dark: #111827;
-      --teal: #0f766e;
-      --teal-soft: #dff3ef;
-      --blue: #2563eb;
-      --blue-soft: #e7efff;
-      --red: #be123c;
-      --red-soft: #fde7ee;
-      --amber: #b45309;
-      --amber-soft: #fff1d6;
-      --radius: 8px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      /* ---- Palette: warm-neutral paper + single slate accent ---- */
+      --bg:        #f4f3ef;   /* warm paper */
+      --bg-2:      #eceae3;   /* recessed paper */
+      --panel:     #fbfaf7;   /* card surface */
+      --panel-2:   #f1efe9;   /* inset surface */
+      --ink:       #1c2128;   /* primary text */
+      --ink-2:     #3d444d;   /* secondary text */
+      --muted:     #6b7079;   /* tertiary / captions */
+      --faint:     #9aa0a8;   /* hairline labels */
+      --line:      #ddd9cf;   /* hairline border */
+      --line-2:    #cfcabd;   /* stronger border */
+
+      /* Single brand accent (deep slate-teal), used sparingly */
+      --accent:    #1f5e57;
+      --accent-ink:#15433e;
+      --accent-soft:#e3ece9;
+      --on-accent: #fbfaf7;
+
+      /* Semantic — desaturated so it never shouts */
+      --pos:       #2f6f4f;
+      --neg:       #9c3a4f;
+      --warn-ink:  #7a5a1c;
+      --warn-soft: #efe6cf;
+
+      /* Per-course identity = a single hue used only as a thin rail/tint,
+         never as a full saturated fill. */
+      --c-fin:  #1f5e57;
+      --c-opt:  #2d4a7a;
+      --c-lang: #8a3d4c;
+
+      /* ---- Type scale (modular, ~1.25) ---- */
+      --fs-700: 1.85rem;  /* page / hero h2 */
+      --fs-600: 1.4rem;   /* card / panel h2 */
+      --fs-500: 1.12rem;  /* sub-head h3, course title */
+      --fs-400: 0.95rem;  /* body */
+      --fs-300: 0.82rem;  /* small / meta */
+      --fs-200: 0.72rem;  /* labels / chips */
+      --lh-tight: 1.18;
+      --lh-body: 1.6;
+
+      /* Weights kept to three steps */
+      --w-reg: 440;
+      --w-med: 560;
+      --w-bold: 680;
+
+      /* ---- 8pt spacing rhythm ---- */
+      --sp-1: 4px;
+      --sp-2: 8px;
+      --sp-3: 12px;
+      --sp-4: 16px;
+      --sp-5: 24px;
+      --sp-6: 32px;
+      --sp-7: 48px;
+
+      /* ---- Radii (one family) ---- */
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+      --r-pill: 999px;
+
+      /* ---- Elevation: hairline-first, shadow used once ---- */
+      --shadow-sm: 0 1px 2px rgba(28,33,40,.05);
+      --shadow-md: 0 6px 22px -12px rgba(28,33,40,.30);
+      --ring: 0 0 0 1px var(--line);
+
+      --mono: "SFMono-Regular", ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      --serif: "Iowan Old Style", "Source Serif 4", Georgia, "Noto Serif TC", serif;
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
     body {
       margin: 0;
       font-family: var(--sans);
+      font-size: var(--fs-400);
+      font-weight: var(--w-reg);
       color: var(--ink);
       background: var(--bg);
-      line-height: 1.55;
+      line-height: var(--lh-body);
+      font-feature-settings: "cv05" 1, "ss01" 1;
     }
-    button, input, textarea { font: inherit; }
-    button { cursor: pointer; }
-    a { color: inherit; }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { cursor: pointer; background: none; border: none; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3 { margin: 0; font-weight: var(--w-bold); letter-spacing: -0.01em; line-height: var(--lh-tight); }
+
+    /* ---------- Shell ---------- */
     .app {
       display: grid;
-      grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-columns: 304px minmax(0, 1fr);
       min-height: 100vh;
     }
+
+    /* ---------- Sidebar ---------- */
     aside {
       position: sticky;
       top: 0;
+      align-self: start;
       height: 100vh;
       overflow: auto;
-      padding: 18px;
-      background: var(--dark);
-      color: #f8fafc;
+      padding: var(--sp-5) var(--sp-5) var(--sp-6);
+      background: var(--ink);
+      color: #e9ebee;
+      border-right: 1px solid #0e1318;
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: var(--sp-3);
+      padding-bottom: var(--sp-5);
+      border-bottom: 1px solid rgba(255,255,255,.09);
     }
     .brand-mark {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      background: #f8fafc;
-      color: var(--dark);
+      width: 42px;
+      height: 42px;
+      border-radius: var(--r-md);
+      background: transparent;
+      color: #f5f6f7;
+      border: 1.5px solid rgba(255,255,255,.28);
       display: grid;
       place-items: center;
-      font-weight: 900;
-      font-family: var(--mono);
+      flex: 0 0 auto;
     }
-    .brand h1 { margin: 0; font-size: 22px; line-height: 1; }
-    .brand p { margin: 4px 0 0; color: #cbd5e1; font-size: 12px; }
+    .brand-mark svg { width: 22px; height: 22px; display: block; }
+    .brand h1 {
+      font-size: var(--fs-600);
+      letter-spacing: 0.14em;
+      font-weight: var(--w-bold);
+    }
+    .brand p {
+      margin: 3px 0 0;
+      color: #9aa3ae;
+      font-size: var(--fs-200);
+      letter-spacing: 0.04em;
+    }
     .side-label {
-      margin: 18px 0 8px;
-      color: #9ca3af;
-      font-size: 11px;
-      font-weight: 800;
+      display: block;
+      margin: var(--sp-5) 0 var(--sp-2);
+      color: #8b95a1;
+      font-size: var(--fs-200);
+      font-weight: var(--w-bold);
+      letter-spacing: 0.16em;
       text-transform: uppercase;
+    }
+    .side-search { position: relative; }
+    .side-search .ic {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px;
+      color: #8b95a1;
+      pointer-events: none;
     }
     .search {
       width: 100%;
       border: 1px solid rgba(255,255,255,.16);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.08);
+      border-radius: var(--r-md);
+      background: rgba(255,255,255,.05);
       color: #fff;
-      padding: 10px 12px;
+      padding: 10px 12px 10px 36px;
+      font-size: var(--fs-300);
+      transition: border-color .15s, background-color .15s;
     }
-    .search::placeholder { color: #aeb8c8; }
-    .seg {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 7px;
-    }
+    .search::placeholder { color: #8b95a1; }
+    .search:hover { border-color: rgba(255,255,255,.26); }
+
+    .seg { display: grid; gap: var(--sp-1); }
     .seg button {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
       width: 100%;
       text-align: left;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius);
+      border: 1px solid transparent;
+      border-radius: var(--r-sm);
       padding: 9px 11px;
-      background: rgba(255,255,255,.05);
-      color: #e5e7eb;
-      font-weight: 800;
+      background: transparent;
+      color: #c4cad2;
+      font-size: var(--fs-300);
+      font-weight: var(--w-med);
+      letter-spacing: 0.01em;
+    }
+    .seg button .dot {
+      width: 6px; height: 6px; border-radius: var(--r-pill);
+      background: currentColor; opacity: .45; flex: 0 0 auto;
     }
     .seg button.active {
-      border-color: #5eead4;
-      background: rgba(45,212,191,.13);
-      color: #fff;
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.14);
+      color: #ffffff;
     }
+    .seg button.active .dot { opacity: 1; color: #6fd0c2; }
+
     .side-stat {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 12px;
+      gap: var(--sp-2);
     }
     .side-stat div {
-      padding: 10px;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.05);
+      padding: var(--sp-3);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--r-md);
+      background: rgba(255,255,255,.025);
     }
-    .side-stat b { display: block; font-size: 21px; font-family: var(--mono); color: #fff; }
-    .side-stat span { color: #cbd5e1; font-size: 11px; }
+    .side-stat b {
+      display: block;
+      font-size: 1.5rem;
+      font-family: var(--mono);
+      font-weight: var(--w-med);
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .side-stat span {
+      color: #9aa3ae;
+      font-size: var(--fs-200);
+      letter-spacing: 0.02em;
+    }
     .notice {
-      margin-top: 14px;
-      padding: 10px 12px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(251,191,36,.35);
-      background: rgba(251,191,36,.10);
-      color: #fde68a;
-      font-size: 12px;
+      margin-top: var(--sp-4);
+      padding: var(--sp-3);
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.025);
+      color: #aab2bd;
+      font-size: var(--fs-200);
+      line-height: 1.5;
+      display: flex;
+      gap: var(--sp-2);
     }
+    .notice svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; color: #8b95a1; }
+
+    /* ---------- Main ---------- */
     main {
       min-width: 0;
       width: 100%;
-      max-width: 1320px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 24px;
+      padding: var(--sp-6) var(--sp-6) var(--sp-7);
     }
+
     .top {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 18px;
-      margin-bottom: 18px;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: var(--sp-5);
+      margin-bottom: var(--sp-5);
       align-items: stretch;
     }
+
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 18px;
+      border-radius: var(--r-lg);
+      padding: var(--sp-5);
+      box-shadow: var(--shadow-sm);
     }
-    .intro h2 { margin: 0; font-size: 28px; }
-    .intro p { margin: 8px 0 0; color: var(--muted); max-width: 78ch; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      color: var(--accent-ink);
+      font-size: var(--fs-200);
+      font-weight: var(--w-bold);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: var(--sp-3);
+    }
+    .eyebrow::before {
+      content: "";
+      width: 18px; height: 1.5px;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .intro h2 {
+      font-size: var(--fs-700);
+      font-family: var(--serif);
+      font-weight: var(--w-bold);
+      letter-spacing: -0.02em;
+    }
+    .intro p {
+      margin: var(--sp-3) 0 0;
+      color: var(--ink-2);
+      max-width: 64ch;
+      font-size: var(--fs-400);
+    }
     .quick-row {
       display: flex;
-      gap: 8px;
+      gap: var(--sp-2);
       flex-wrap: wrap;
-      margin-top: 14px;
+      margin-top: var(--sp-5);
+      padding-top: var(--sp-4);
+      border-top: 1px solid var(--line);
     }
+
+    /* ---------- Buttons (one neutral system + one accent) ---------- */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 36px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
+      gap: var(--sp-2);
+      min-height: 38px;
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-sm);
       background: var(--panel);
       color: var(--ink);
-      padding: 8px 11px;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 800;
+      padding: 8px 13px;
+      font-size: var(--fs-300);
+      font-weight: var(--w-med);
+      letter-spacing: 0.01em;
+      white-space: nowrap;
     }
-    .btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
-    .btn.blue { background: var(--blue); border-color: var(--blue); color: #fff; }
-    .btn.warn { background: var(--amber-soft); border-color: #f1c27d; color: #7c3e08; }
-    .btn:disabled, .btn.disabled { opacity: .55; cursor: not-allowed; pointer-events: none; }
+    .btn svg { width: 15px; height: 15px; flex: 0 0 auto; }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--on-accent);
+    }
+    /* secondary emphasis = subtle, not a second bright colour */
+    .btn.blue {
+      background: var(--panel-2);
+      border-color: var(--line-2);
+      color: var(--ink);
+    }
+    .btn.warn {
+      background: transparent;
+      border-color: var(--line-2);
+      color: var(--ink-2);
+    }
+    .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+    .btn:disabled, .btn.disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ---------- Map card → restrained line illustration ---------- */
     .map {
       display: grid;
-      align-content: center;
-      gap: 8px;
+      align-content: space-between;
+      gap: var(--sp-3);
       overflow: hidden;
     }
-    .map svg { width: 100%; height: 150px; display: block; }
-    .map-caption { color: var(--muted); font-size: 12px; }
+    .map .eyebrow { margin-bottom: 0; }
+    .map svg.diagram { width: 100%; height: 132px; display: block; }
+    .map-caption { color: var(--muted); font-size: var(--fs-300); }
+
+    /* ---------- Dashboard ---------- */
     .dashboard {
       display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, .92fr) minmax(420px, 1.08fr);
+      gap: var(--sp-5);
       align-items: start;
     }
     .panel-head {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: var(--sp-3);
       align-items: baseline;
-      margin-bottom: 12px;
+      margin-bottom: var(--sp-4);
+      padding-bottom: var(--sp-3);
+      border-bottom: 1px solid var(--line);
     }
-    .panel h2, .panel h3 { margin: 0; }
-    .panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .panel-head h2 { font-size: var(--fs-600); }
+    .panel-head p { margin: var(--sp-1) 0 0; color: var(--muted); font-size: var(--fs-300); }
+
     .badge {
       display: inline-flex;
       align-items: center;
-      min-height: 24px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 900;
+      min-height: 22px;
+      padding: 2px 9px;
+      border-radius: var(--r-pill);
+      font-size: var(--fs-200);
+      font-weight: var(--w-bold);
+      letter-spacing: 0.04em;
       white-space: nowrap;
-      background: var(--teal-soft);
-      color: var(--teal);
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
     }
-    .course-grid {
-      display: grid;
-      gap: 10px;
+    .badge.count {
+      background: var(--panel-2);
+      color: var(--muted);
+      border-color: var(--line);
+      font-family: var(--mono);
+      font-weight: var(--w-med);
     }
+
+    .course-grid { display: grid; gap: var(--sp-3); }
+
+    /* Whole card is the click target; left rail carries course hue */
     .course-card {
+      position: relative;
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: var(--r-md);
       background: var(--panel);
-      padding: 14px;
+      padding: var(--sp-4) var(--sp-4) var(--sp-4) calc(var(--sp-4) + 5px);
       display: grid;
-      gap: 10px;
+      gap: var(--sp-3);
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+    }
+    .course-card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 12px; bottom: 12px;
+      width: 3px;
+      border-radius: var(--r-pill);
+      background: var(--rail, var(--line-2));
+      opacity: .55;
+      transition: opacity .15s, top .15s, bottom .15s;
     }
     .course-card.active {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 2px var(--blue-soft);
+      border-color: color-mix(in srgb, var(--rail, var(--accent)) 55%, var(--line));
+      background: color-mix(in srgb, var(--rail, var(--accent)) 5%, var(--panel));
     }
-    .empty-state {
-      text-align: center;
-      padding: 32px 18px;
-      border: 1px dashed var(--line);
-      border-radius: var(--radius);
-      color: var(--muted);
-      background: transparent;
-    }
-    .empty-state b { display: block; font-weight: 800; margin-bottom: 4px; }
-    .empty-state span { font-size: 13px; }
+    .course-card.active::before { opacity: 1; top: 6px; bottom: 6px; width: 3px; }
+
     .course-top {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: var(--sp-3);
       align-items: start;
     }
+    .course-id { display: flex; gap: var(--sp-3); align-items: flex-start; min-width: 0; }
     .course-code {
-      width: 48px;
-      height: 48px;
-      border-radius: 8px;
+      width: 46px;
+      height: 46px;
+      border-radius: var(--r-md);
       display: grid;
       place-items: center;
       font-family: var(--mono);
-      font-weight: 900;
-      color: #fff;
+      font-weight: var(--w-bold);
+      font-size: var(--fs-300);
+      letter-spacing: 0.02em;
+      color: var(--rail, var(--accent-ink));
+      background: color-mix(in srgb, var(--rail, var(--accent)) 9%, var(--panel));
+      border: 1px solid color-mix(in srgb, var(--rail, var(--accent)) 28%, var(--line));
       flex: 0 0 auto;
     }
-    .course-title { font-size: 20px; font-weight: 900; line-height: 1.2; }
-    .course-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-    .meta {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .course-title { font-size: var(--fs-500); font-weight: var(--w-bold); line-height: 1.25; }
+    .course-sub { color: var(--muted); font-size: var(--fs-300); margin-top: var(--sp-1); line-height: 1.5; }
+
+    .meta { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
     .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 4px 9px;
+      border-radius: var(--r-pill);
+      padding: 3px 10px;
+      color: var(--ink-2);
+      background: var(--panel-2);
+      font-size: var(--fs-200);
+      font-weight: var(--w-med);
+      letter-spacing: 0.01em;
+    }
+    .chip svg { width: 12px; height: 12px; color: var(--muted); }
+
+    .card-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+    /* inner actions sit above the card click via z-index + stopPropagation */
+    .card-actions .btn, .card-actions .disabled { position: relative; z-index: 1; }
+
+    .empty-state {
+      text-align: center;
+      padding: var(--sp-7) var(--sp-4);
+      border: 1px dashed var(--line-2);
+      border-radius: var(--r-md);
       color: var(--muted);
-      background: #fff;
-      font-size: 12px;
-      font-weight: 700;
+      background: var(--panel-2);
     }
-    .card-actions {
-      display: flex;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
+    .empty-state svg { width: 28px; height: 28px; color: var(--faint); margin-bottom: var(--sp-2); }
+    .empty-state b { display: block; font-weight: var(--w-bold); color: var(--ink-2); margin-bottom: var(--sp-1); }
+    .empty-state span { font-size: var(--fs-300); }
+
+    /* ---------- Detail panel ---------- */
     .detail-title {
       display: flex;
-      gap: 12px;
+      gap: var(--sp-3);
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: var(--sp-4);
     }
-    .detail-title h2 { font-size: 25px; }
+    .detail-title .course-code { width: 52px; height: 52px; font-size: var(--fs-400); }
+    .detail-title h2 { font-size: var(--fs-600); }
+
     .detail-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 12px 0;
+      gap: var(--sp-2);
+      margin: var(--sp-4) 0;
     }
     .metric {
-      padding: 12px;
+      padding: var(--sp-3) var(--sp-4);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: var(--r-md);
       background: var(--panel-2);
     }
-    .metric b { display: block; font-size: 19px; font-family: var(--mono); }
-    .metric span { color: var(--muted); font-size: 12px; }
+    .metric b {
+      display: block;
+      font-size: var(--fs-500);
+      font-family: var(--mono);
+      font-weight: var(--w-med);
+      letter-spacing: -0.01em;
+    }
+    .metric span { color: var(--muted); font-size: var(--fs-200); letter-spacing: 0.02em; }
+
     .section-block {
       border-top: 1px solid var(--line);
-      padding-top: 14px;
-      margin-top: 14px;
+      padding-top: var(--sp-4);
+      margin-top: var(--sp-4);
     }
-    .route-list {
-      display: grid;
-      gap: 8px;
-      margin-top: 10px;
+    .section-block h3 {
+      font-size: var(--fs-300);
+      font-weight: var(--w-bold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: var(--sp-2);
     }
+    #detail-outcome { color: var(--ink-2); }
+
+    .route-list { display: grid; gap: var(--sp-2); margin-top: var(--sp-3); }
     .route-step {
       display: grid;
-      grid-template-columns: 42px minmax(0, 1fr);
-      gap: 10px;
+      grid-template-columns: 30px minmax(0, 1fr);
+      gap: var(--sp-3);
       align-items: start;
-      padding: 10px;
+      padding: var(--sp-3);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: var(--r-md);
       background: var(--panel);
     }
     .route-step b {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--r-pill);
       display: grid;
       place-items: center;
-      background: var(--blue-soft);
-      color: var(--blue);
+      background: var(--accent-soft);
+      color: var(--accent-ink);
       font-family: var(--mono);
+      font-size: var(--fs-300);
+      font-weight: var(--w-bold);
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
     }
-    .route-step strong { display: block; }
-    .route-step span { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .route-step strong { display: block; font-weight: var(--w-bold); font-size: var(--fs-400); }
+    .route-step span { display: block; color: var(--muted); font-size: var(--fs-300); margin-top: 2px; line-height: 1.5; }
+
     .compare {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 12px;
+      gap: var(--sp-2);
+      margin-top: var(--sp-3);
     }
     .compare-item {
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 12px;
+      border-radius: var(--r-md);
+      padding: var(--sp-3);
       background: var(--panel-2);
+      border-top: 2px solid var(--ci, var(--line-2));
     }
-    .compare-item b { display: block; margin-bottom: 4px; }
-    .compare-item span { color: var(--muted); font-size: 13px; }
+    .compare-item b {
+      display: block;
+      margin-bottom: var(--sp-1);
+      font-family: var(--mono);
+      font-size: var(--fs-300);
+      letter-spacing: 0.03em;
+      color: var(--ink);
+    }
+    .compare-item span { color: var(--muted); font-size: var(--fs-300); line-height: 1.5; }
+
+    /* ---------- Export: learner-friendly, collapsed by default ---------- */
+    .export-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-3);
+      flex-wrap: wrap;
+    }
+    .export-hint { color: var(--muted); font-size: var(--fs-300); display: flex; align-items: center; gap: 6px; }
+    .export-hint svg { width: 14px; height: 14px; }
+    .export-box-wrap { margin-top: var(--sp-3); }
+    .export-box-wrap[hidden] { display: none; }
     textarea {
       width: 100%;
-      min-height: 96px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 10px 12px;
+      min-height: 150px;
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-md);
+      padding: var(--sp-3) var(--sp-4);
       resize: vertical;
-      background: #fff;
-      color: var(--ink);
-      margin-top: 10px;
+      background: var(--panel-2);
+      color: var(--ink-2);
+      font-family: var(--mono);
+      font-size: var(--fs-300);
+      line-height: 1.65;
+      tab-size: 2;
     }
 
-    /* --- Interaction feedback (visual only): hover / active --- */
-    .btn,
-    .seg button,
-    .chip,
-    .course-card {
-      transition: background-color .15s, border-color .15s, box-shadow .15s, filter .15s, transform .05s;
+    /* ---------- Toast (lives outside re-rendered subtree) ---------- */
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translate(-50%, 14px);
+      z-index: 50;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: 10px 16px;
+      border-radius: var(--r-pill);
+      background: var(--ink);
+      color: #f4f3ef;
+      font-size: var(--fs-300);
+      font-weight: var(--w-med);
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
     }
-    .btn:not(:disabled):not(.disabled):hover { border-color: var(--muted); }
-    .btn.primary:not(:disabled):hover,
-    .btn.blue:not(:disabled):hover,
-    .btn.warn:not(:disabled):hover { filter: brightness(1.06); }
-    .seg button:not(.active):hover {
-      border-color: rgba(255,255,255,.28);
-      background: rgba(255,255,255,.10);
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+    #toast svg { width: 15px; height: 15px; }
+    #toast.err { background: var(--neg); }
+
+    /* ---------- Motion ---------- */
+    .btn, .seg button, .chip, .course-card, .search {
+      transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, color .15s ease, transform .06s ease;
     }
-    .course-card:not(.active):hover { border-color: var(--muted); }
+    .btn:not(:disabled):not(.disabled):hover { border-color: var(--ink-2); }
+    .btn.primary:not(:disabled):hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+    .btn.blue:not(:disabled):hover { background: var(--bg-2); }
+    .btn.warn:not(:disabled):hover { border-color: var(--ink-2); color: var(--ink); }
+    .seg button:not(.active):hover { background: rgba(255,255,255,.05); color: #e9ebee; }
+    .course-card:hover { border-color: var(--line-2); box-shadow: var(--shadow-sm); }
+    .course-card:not(.active):hover::before { opacity: .85; top: 8px; bottom: 8px; }
     .btn:not(:disabled):not(.disabled):active { transform: translateY(1px); }
     .seg button:active { transform: translateY(1px); }
 
-    /* --- Keyboard focus ring (WCAG 2.4.7), keyboard-only via :focus-visible --- */
+    /* ---------- Focus (keyboard-only) ---------- */
     .btn:focus-visible,
     a.btn:focus-visible,
-    .course-card:focus-visible {
-      outline: 2px solid var(--blue);
-      outline-offset: 2px;
-    }
+    .course-card:focus-visible,
+    .seg button:focus-visible,
     .search:focus-visible,
-    .seg button:focus-visible {
-      outline: 2px solid #5eead4;
+    textarea:focus-visible {
+      outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
+    aside .search:focus-visible,
+    aside .seg button:focus-visible {
+      outline-color: #6fd0c2;
+    }
+    .course-card:focus-visible { outline-offset: 1px; }
 
+    /* ---------- Responsive ---------- */
     @media (max-width: 1080px) {
       .app { grid-template-columns: 1fr; }
       aside { position: relative; height: auto; }
       .top, .dashboard { grid-template-columns: 1fr; }
-      .seg {
-        display: flex;
-        overflow-x: auto;
-        padding-bottom: 2px;
-      }
-      .seg button { min-width: 150px; }
+      .seg { display: flex; overflow-x: auto; padding-bottom: var(--sp-1); gap: var(--sp-2); }
+      .seg button { min-width: 132px; }
     }
     @media (max-width: 640px) {
-      main { padding: 14px; }
-      .intro h2 { font-size: 23px; }
+      main { padding: var(--sp-4) var(--sp-4) var(--sp-6); }
+      .panel { padding: var(--sp-4); }
+      .intro h2 { font-size: 1.55rem; }
       .course-top, .panel-head { display: block; }
-      .course-code { margin-bottom: 8px; }
+      .panel-head { display: flex; }
+      .course-code { margin-bottom: var(--sp-2); }
       .detail-grid, .compare { grid-template-columns: 1fr; }
       .card-actions .btn, .quick-row .btn { width: 100%; }
+      .badge { margin-top: var(--sp-2); }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; scroll-behavior: auto !important; }
+    }
+
+    /* ---------- Dark mode parity ---------- */
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0f172a;
-        --panel: #172033;
-        --panel-2: #111827;
-        --ink: #f8fafc;
-        --muted: #b5c0d0;
-        --line: #2f3b52;
-        --teal-soft: #123b36;
-        --blue-soft: #172c58;
-        --red-soft: #4a1524;
-        --amber-soft: #3a2713;
+        --bg:        #14171c;
+        --bg-2:      #0f1216;
+        --panel:     #1b1f26;
+        --panel-2:   #20252d;
+        --ink:       #e9ebee;
+        --ink-2:     #c3c8cf;
+        --muted:     #8b939d;
+        --faint:     #6b727b;
+        --line:      #2b3138;
+        --line-2:    #3a414a;
+
+        --accent:    #4fb3a4;
+        --accent-ink:#8fd6c9;
+        --accent-soft:#16302c;
+        --on-accent: #0c1311;
+
+        --pos:       #5bb083;
+        --neg:       #d07d8c;
+        --warn-ink:  #cdb074;
+        --warn-soft: #2c2615;
+
+        --c-fin:  #4fb3a4;
+        --c-opt:  #7aa0d6;
+        --c-lang: #d07d8c;
+
+        --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+        --shadow-md: 0 10px 30px -12px rgba(0,0,0,.7);
       }
-      .chip, textarea { background: #0f172a; color: var(--ink); }
+      aside { background: #0c0e12; border-right-color: #000; }
+      #toast { background: #2a3038; color: #e9ebee; }
+      #toast.err { background: var(--neg); color: #1a0f12; }
     }
   </style>
 </head>
@@ -426,7 +741,14 @@
   <div class="app">
     <aside>
       <div class="brand">
-        <div class="brand-mark">L</div>
+        <div class="brand-mark" aria-hidden="true">
+          <!-- open-book line mark -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 6.5C10.5 5 8 4.5 4.5 4.8V18c3.5-.3 6 .2 7.5 1.7"/>
+            <path d="M12 6.5C13.5 5 16 4.5 19.5 4.8V18c-3.5-.3-6 .2-7.5 1.7"/>
+            <path d="M12 6.5V19.7"/>
+          </svg>
+        </div>
         <div>
           <h1>LEARN</h1>
           <p>所有教學系統入口</p>
@@ -434,7 +756,10 @@
       </div>
 
       <label class="side-label" for="search">搜尋</label>
-      <input class="search" id="search" type="search" aria-label="搜尋教學系統" placeholder="搜尋：財報、期權、日檢...">
+      <div class="side-search">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input class="search" id="search" type="search" aria-label="搜尋教學系統" placeholder="搜尋：財報、期權、日檢…">
+      </div>
 
       <div class="side-label" id="filters-label">目標</div>
       <div class="seg" id="filters" role="group" aria-labelledby="filters-label"></div>
@@ -446,28 +771,40 @@
         <div><b id="stat-hours">0</b><span>完整時數</span></div>
         <div><b id="stat-routes">0</b><span>考試/實戰路線</span></div>
       </div>
-      <div class="notice">本入口只做選課與導覽；各課程進度仍保存在原本專案自己的瀏覽器 localStorage。</div>
+      <div class="notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg>
+        <span>本入口只做選課與導覽；各課程進度仍保存在原本專案自己的瀏覽器 localStorage。</span>
+      </div>
     </aside>
 
     <main>
       <section class="top">
         <div class="panel intro">
+          <span class="eyebrow">學習入口</span>
           <h2>選擇今天要學什麼</h2>
           <p>這裡是 FIN、OPT、LANG 的統一入口。先依目標篩選，再進入對應教學系統；每個系統仍維持單檔 HTML、離線可開、可獨立更新。</p>
           <div class="quick-row" id="quick-actions"></div>
         </div>
         <div class="panel map" aria-label="Learning map">
-          <svg viewBox="0 0 320 160" role="img" aria-label="FIN OPT LANG learning map">
-            <rect x="10" y="16" width="300" height="128" rx="8" fill="var(--panel-2)" stroke="var(--line)"/>
-            <path d="M68 80 H150 H244" fill="none" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-            <circle cx="68" cy="80" r="29" fill="var(--teal)"/>
-            <circle cx="160" cy="80" r="29" fill="var(--blue)"/>
-            <circle cx="252" cy="80" r="29" fill="var(--red)"/>
-            <text x="68" y="86" fill="#fff" font-size="17" font-family="monospace" text-anchor="middle" font-weight="800">FIN</text>
-            <text x="160" y="86" fill="#fff" font-size="17" font-family="monospace" text-anchor="middle" font-weight="800">OPT</text>
-            <text x="252" y="86" fill="#fff" font-size="17" font-family="monospace" text-anchor="middle" font-weight="800">LANG</text>
-            <text x="24" y="36" fill="var(--muted)" font-size="12" font-family="monospace">choose path</text>
-            <text x="214" y="132" fill="var(--muted)" font-size="12" font-family="monospace">learn / test / repeat</text>
+          <span class="eyebrow">學習地圖</span>
+          <svg class="diagram" viewBox="0 0 320 132" role="img" aria-label="FIN OPT LANG 三套系統的學習路徑：選路、學習、測驗、重複">
+            <!-- connecting path -->
+            <path d="M44 70 H160 H276" fill="none" stroke="var(--line-2)" stroke-width="1.5" stroke-dasharray="2 5" stroke-linecap="round"/>
+            <!-- nodes: outlined, single-weight, course hue as stroke only -->
+            <g font-family="var(--mono)" font-size="12" font-weight="700" text-anchor="middle">
+              <circle cx="44"  cy="70" r="22" fill="var(--panel)" stroke="var(--c-fin)"  stroke-width="1.6"/>
+              <circle cx="160" cy="70" r="22" fill="var(--panel)" stroke="var(--c-opt)"  stroke-width="1.6"/>
+              <circle cx="276" cy="70" r="22" fill="var(--panel)" stroke="var(--c-lang)" stroke-width="1.6"/>
+              <text x="44"  y="74" fill="var(--c-fin)">FIN</text>
+              <text x="160" y="74" fill="var(--c-opt)">OPT</text>
+              <text x="276" y="74" fill="var(--c-lang)">LANG</text>
+            </g>
+            <g font-family="var(--mono)" font-size="9.5" fill="var(--muted)" letter-spacing="0.5">
+              <text x="44"  y="108" text-anchor="middle">choose path</text>
+              <text x="160" y="108" text-anchor="middle">learn</text>
+              <text x="276" y="108" text-anchor="middle">test / repeat</text>
+            </g>
+            <text x="14" y="22" font-family="var(--mono)" font-size="10" fill="var(--faint)" letter-spacing="1">PATH</text>
           </svg>
           <div class="map-caption">入口頁不取代課程內容；它負責把學習者帶到正確的系統。</div>
         </div>
@@ -480,16 +817,16 @@
               <h2>教學系統</h2>
               <p id="result-label">全部課程</p>
             </div>
-            <span class="badge" id="result-count" role="status" aria-live="polite">0 items</span>
+            <span class="badge count" id="result-count" role="status" aria-live="polite">0 items</span>
           </div>
-          <div class="course-grid" id="course-grid"></div>
+          <div class="course-grid" id="course-grid" role="list" aria-live="polite"></div>
         </div>
 
-        <div class="panel" id="detail-panel">
+        <div class="panel" id="detail-panel" aria-live="polite">
           <div class="detail-title">
             <div class="course-code" id="detail-code">--</div>
             <div>
-              <h2 id="detail-title">選一個教學系統</h2>
+              <h2 id="detail-title" tabindex="-1">選一個教學系統</h2>
               <p class="course-sub" id="detail-sub">左側選課後會顯示完整路線與開啟方式。</p>
             </div>
           </div>
@@ -502,7 +839,7 @@
           <div class="section-block">
             <h3>適合目標</h3>
             <p class="course-sub" id="detail-outcome"></p>
-            <div class="meta" id="detail-tags"></div>
+            <div class="meta" id="detail-tags" style="margin-top:var(--sp-3)"></div>
           </div>
           <div class="section-block">
             <h3>建議學習路線</h3>
@@ -513,13 +850,26 @@
             <div class="compare" id="compare-grid"></div>
           </div>
           <div class="section-block">
-            <button class="btn primary" id="copy-plan">複製路線</button>
-            <textarea id="export-box" readonly placeholder="複製的學習路線會出現在這裡。"></textarea>
+            <div class="export-head">
+              <button class="btn primary" id="copy-plan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                複製學習路線
+              </button>
+              <span class="export-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+                以 Markdown 複製，可貼到筆記或對話
+              </span>
+            </div>
+            <div class="export-box-wrap" id="export-box-wrap" hidden>
+              <textarea id="export-box" readonly placeholder="複製的學習路線會出現在這裡。" aria-label="學習路線 Markdown 內容"></textarea>
+            </div>
           </div>
         </div>
       </section>
     </main>
   </div>
+
+  <div id="toast" role="status" aria-live="polite" aria-hidden="true"></div>
 
   <script>
     "use strict";
@@ -593,6 +943,9 @@
       }
     ];
 
+    // Per-course rail hue (CSS var name) — identity without rainbow fills.
+    const RAIL = { fin: "var(--c-fin)", opt: "var(--c-opt)", lang: "var(--c-lang)" };
+
     const FILTERS = [
       { id: "all", label: "全部教學" },
       { id: "investing", label: "投資分析" },
@@ -605,12 +958,19 @@
       ["OPT", "理解衍生品與風險，適合交易前決策與復盤。"],
       ["LANG", "長週期考試訓練，適合需要明確分數或證照目標。"]
     ];
+    const COMPARE_RAIL = ["var(--c-fin)", "var(--c-opt)", "var(--c-lang)"];
 
     const state = {
       filter: "all",
       query: "",
       selected: "fin"
     };
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, ch => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
+      ));
+    }
 
     function filteredCourses() {
       const q = state.query.trim().toLowerCase();
@@ -621,6 +981,7 @@
       });
     }
 
+    /* ---- Split render: full vs. list-only vs. detail-only ---- */
     function render() {
       renderStats();
       renderFilters();
@@ -638,24 +999,30 @@
 
     function renderFilters() {
       const wrap = document.getElementById("filters");
-      wrap.innerHTML = FILTERS.map(f => `<button class="${state.filter === f.id ? "active" : ""}" data-filter="${f.id}">${f.label}</button>`).join("");
+      wrap.innerHTML = FILTERS.map(f =>
+        `<button class="${state.filter === f.id ? "active" : ""}" data-filter="${f.id}" type="button" aria-pressed="${state.filter === f.id}"><span class="dot" aria-hidden="true"></span>${esc(f.label)}</button>`
+      ).join("");
       wrap.querySelectorAll("[data-filter]").forEach(btn => {
         btn.addEventListener("click", () => {
           state.filter = btn.dataset.filter;
           const list = filteredCourses();
           if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
-          render();
+          renderFilters();
+          renderQuickActions();
+          renderCourses();
+          renderDetail();
         });
       });
     }
 
     function renderQuickActions() {
       const selected = course();
+      const openIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M19 13.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4.5"/></svg>`;
       document.getElementById("quick-actions").innerHTML = `
-        ${selected ? `<a class="btn primary" href="${selected.localUrl}" target="_blank" rel="noreferrer">開啟 ${selected.code}</a>` : ""}
-        <button class="btn" data-select="fin">財報</button>
-        <button class="btn" data-select="opt">期權/期貨</button>
-        <button class="btn" data-select="lang">語言考試</button>
+        ${selected ? `<a class="btn primary" href="${esc(selected.localUrl)}" target="_blank" rel="noreferrer">${openIcon}開啟 ${esc(selected.code)}</a>` : ""}
+        <button class="btn" data-select="fin" type="button">財報</button>
+        <button class="btn" data-select="opt" type="button">期權/期貨</button>
+        <button class="btn" data-select="lang" type="button">語言考試</button>
       `;
       document.querySelectorAll("[data-select]").forEach(btn => btn.addEventListener("click", () => {
         state.selected = btn.dataset.select;
@@ -670,37 +1037,60 @@
     function renderCourses() {
       const list = filteredCourses();
       const label = FILTERS.find(f => f.id === state.filter)?.label || "全部教學";
-      document.getElementById("result-label").textContent = label + (state.query ? " / 搜尋：" + state.query : "");
+      document.getElementById("result-label").textContent = label + (state.query ? " · 搜尋：" + state.query : "");
       document.getElementById("result-count").textContent = list.length + " items";
+
+      const chipIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/></svg>`;
       const grid = document.getElementById("course-grid");
-      grid.innerHTML = list.length ? list.map(c => `
-        <article class="course-card ${state.selected === c.id ? "active" : ""}"${state.selected === c.id ? ' aria-current="true"' : ""}>
+      grid.innerHTML = list.length ? list.map(c => {
+        const rail = RAIL[c.id] || "var(--accent)";
+        const sel = state.selected === c.id;
+        return `
+        <article class="course-card ${sel ? "active" : ""}" style="--rail:${rail}" role="listitem" tabindex="0" data-card="${c.id}"${sel ? ' aria-current="true"' : ""} aria-label="${esc(c.title)}">
           <div class="course-top">
-            <div style="display:flex;gap:12px;align-items:flex-start;">
-              <div class="course-code" style="background:${c.color}">${c.code}</div>
+            <div class="course-id">
+              <div class="course-code">${esc(c.code)}</div>
               <div>
-                <div class="course-title">${c.title}</div>
-                <div class="course-sub">${c.subtitle}</div>
+                <div class="course-title">${esc(c.title)}</div>
+                <div class="course-sub">${esc(c.subtitle)}</div>
               </div>
             </div>
-            <span class="badge">${c.categoryLabel}</span>
+            <span class="badge">${esc(c.categoryLabel)}</span>
           </div>
           <div class="meta">
-            <span class="chip">${c.scope}</span>
-            <span class="chip">${c.hours}h</span>
-            <span class="chip">${c.status}</span>
+            <span class="chip">${chipIcon}${esc(c.scope)}</span>
+            <span class="chip">${esc(c.hours)}h</span>
+            <span class="chip">${esc(c.status)}</span>
           </div>
           <div class="card-actions">
-            <button class="btn blue" data-open-detail="${c.id}">查看路線</button>
-            <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">開啟課程</a>
-            ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
+            <a class="btn primary" href="${esc(c.localUrl)}" target="_blank" rel="noreferrer" data-stop>開啟課程</a>
+            ${c.onlineUrl ? `<a class="btn blue" href="${esc(c.onlineUrl)}" target="_blank" rel="noreferrer" data-stop>固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
           </div>
-        </article>
-      `).join("") : `<div class="empty-state"><b>找不到符合條件的教學系統</b><span>換一個關鍵字或選回全部教學。</span></div>`;
-      grid.querySelectorAll("[data-open-detail]").forEach(btn => btn.addEventListener("click", () => {
-        state.selected = btn.dataset.openDetail;
-        render();
-      }));
+        </article>`;
+      }).join("") : `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <b>找不到符合條件的教學系統</b>
+          <span>換一個關鍵字或選回全部教學。</span>
+        </div>`;
+
+      // Whole card selects; inner links opt out via [data-stop] + stopPropagation.
+      grid.querySelectorAll("[data-card]").forEach(card => {
+        const select = () => {
+          if (state.selected === card.dataset.card) return;
+          state.selected = card.dataset.card;
+          renderQuickActions();
+          renderCourses();
+          renderDetail();
+        };
+        card.addEventListener("click", select);
+        card.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(); }
+        });
+      });
+      grid.querySelectorAll("[data-stop]").forEach(a => {
+        a.addEventListener("click", e => e.stopPropagation());
+      });
     }
 
     function course() {
@@ -712,9 +1102,17 @@
     function renderDetail() {
       const c = course();
       const code = document.getElementById("detail-code");
+      const openIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M19 13.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4.5"/></svg>`;
+
+      const renderCompare = () => {
+        document.getElementById("compare-grid").innerHTML = COMPARE.map((item, i) =>
+          `<div class="compare-item" style="--ci:${COMPARE_RAIL[i] || "var(--line-2)"}"><b>${esc(item[0])}</b><span>${esc(item[1])}</span></div>`
+        ).join("");
+      };
+
       if (!c) {
         code.textContent = "--";
-        code.style.background = "";
+        code.style.removeProperty("--rail");
         document.getElementById("detail-title").textContent = "選一個教學系統";
         document.getElementById("detail-sub").textContent = "左側選課後會顯示完整路線與開啟方式。";
         document.getElementById("detail-scope").textContent = "--";
@@ -724,49 +1122,49 @@
         document.getElementById("detail-tags").innerHTML = "";
         document.getElementById("detail-actions").innerHTML = "";
         document.getElementById("route-list").innerHTML = "";
-        document.getElementById("compare-grid").innerHTML = COMPARE.map(item => `
-          <div class="compare-item"><b>${item[0]}</b><span>${item[1]}</span></div>
-        `).join("");
+        renderCompare();
         return;
       }
+      const rail = RAIL[c.id] || "var(--accent)";
       code.textContent = c.code;
-      code.style.background = c.color;
+      code.style.setProperty("--rail", rail);
       document.getElementById("detail-title").textContent = c.title;
       document.getElementById("detail-sub").textContent = c.subtitle;
       document.getElementById("detail-scope").textContent = c.scope;
       document.getElementById("detail-time").textContent = c.hours + "h";
       document.getElementById("detail-status").textContent = c.status;
       document.getElementById("detail-outcome").textContent = c.outcome;
-      document.getElementById("detail-tags").innerHTML = c.tags.map(t => `<span class="chip">${t}</span>`).join("");
+      document.getElementById("detail-tags").innerHTML = c.tags.map(t => `<span class="chip">${esc(t)}</span>`).join("");
       document.getElementById("detail-actions").innerHTML = `
-        <a class="btn primary" href="${c.localUrl}" target="_blank" rel="noreferrer">開啟 ${c.code}</a>
-        ${c.onlineUrl ? `<a class="btn" href="${c.onlineUrl}" target="_blank" rel="noreferrer">固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
-        <button class="btn warn" data-copy-single="${c.id}">複製路線</button>
+        <a class="btn primary" href="${esc(c.localUrl)}" target="_blank" rel="noreferrer">${openIcon}開啟 ${esc(c.code)}</a>
+        ${c.onlineUrl ? `<a class="btn blue" href="${esc(c.onlineUrl)}" target="_blank" rel="noreferrer">固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
       `;
       document.getElementById("route-list").innerHTML = c.steps.map((s, idx) => `
         <div class="route-step">
           <b>${idx + 1}</b>
-          <div><strong>${s[0]}</strong><span>${s[1]}</span></div>
+          <div><strong>${esc(s[0])}</strong><span>${esc(s[1])}</span></div>
         </div>
       `).join("");
-      document.getElementById("compare-grid").innerHTML = COMPARE.map(item => `
-        <div class="compare-item"><b>${item[0]}</b><span>${item[1]}</span></div>
-      `).join("");
-      document.querySelector("[data-copy-single]").addEventListener("click", copyPlan);
+      renderCompare();
     }
 
-    function flashCopyResult(btn, text) {
-      if (!btn) return;
-      if (!btn.dataset.copyLabel) btn.dataset.copyLabel = btn.textContent;
-      btn.textContent = text;
-      clearTimeout(btn._copyTimer);
-      btn._copyTimer = setTimeout(() => { btn.textContent = btn.dataset.copyLabel; }, 1800);
+    /* ---- Toast lives outside any re-rendered subtree ---- */
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+    function showToast(msg, isErr) {
+      const ok = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4 4 10-10"/></svg>`;
+      const bad = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5"/><path d="M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>`;
+      toastEl.className = isErr ? "show err" : "show";
+      toastEl.innerHTML = (isErr ? bad : ok) + "<span>" + esc(msg) + "</span>";
+      toastEl.setAttribute("aria-hidden", "false");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.classList.remove("show");
+        toastEl.setAttribute("aria-hidden", "true");
+      }, 2200);
     }
 
-    function copyPlan(e) {
-      const c = course();
-      if (!c) return;
-      const btn = e && e.currentTarget ? e.currentTarget : null;
+    function buildPlan(c) {
       const lines = [];
       lines.push("# LEARN 選課路線");
       lines.push("");
@@ -782,31 +1180,60 @@
       lines.push("");
       lines.push("## 標籤");
       lines.push(c.tags.map(t => `\`${t}\``).join(" "));
-      const md = lines.join("\n");
+      return lines.join("\n");
+    }
+
+    function revealBox(md, focusIt) {
+      const wrap = document.getElementById("export-box-wrap");
       const box = document.getElementById("export-box");
       box.value = md;
-      box.focus();
-      box.select();
+      wrap.hidden = false;
+      if (focusIt) { box.focus(); box.select(); }
+    }
+
+    function copyPlan() {
+      const c = course();
+      if (!c) return;
+      const md = buildPlan(c);
+
       const fallbackCopy = () => {
+        // Reveal + select so manual Ctrl+C works, then report.
+        revealBox(md, true);
         let ok = false;
         try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
-        flashCopyResult(btn, ok ? "已複製" : "請按 Ctrl+C 複製");
+        if (ok) showToast("已複製學習路線", false);
+        else showToast("已展開，請按 Ctrl+C 複製", true);
       };
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(md)
-          .then(() => flashCopyResult(btn, "已複製"))
+          .then(() => {
+            // keep the export box value in sync but stay collapsed on success
+            const box = document.getElementById("export-box");
+            box.value = md;
+            showToast("已複製學習路線", false);
+          })
           .catch(fallbackCopy);
       } else {
         fallbackCopy();
       }
     }
 
+    /* ---- Search with debounce; only re-render what changes ---- */
+    let searchTimer = null;
     document.getElementById("search").addEventListener("input", e => {
-      state.query = e.target.value;
-      const list = filteredCourses();
-      if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
-      render();
+      const val = e.target.value;
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        state.query = val;
+        const list = filteredCourses();
+        if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
+        renderQuickActions();
+        renderCourses();
+        renderDetail();
+      }, 160);
     });
+
     document.getElementById("copy-plan").addEventListener("click", copyPlan);
 
     render();
