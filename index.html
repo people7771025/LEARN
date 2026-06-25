@@ -600,7 +600,7 @@
         btn.addEventListener("click", () => {
           state.filter = btn.dataset.filter;
           const list = filteredCourses();
-          if (!list.some(c => c.id === state.selected) && list[0]) state.selected = list[0].id;
+          if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
           render();
         });
       });
@@ -609,7 +609,7 @@
     function renderQuickActions() {
       const selected = course();
       document.getElementById("quick-actions").innerHTML = `
-        <a class="btn primary" href="${selected.localUrl}" target="_blank" rel="noreferrer">Open ${selected.code}</a>
+        ${selected ? `<a class="btn primary" href="${selected.localUrl}" target="_blank" rel="noreferrer">Open ${selected.code}</a>` : ""}
         <button class="btn" data-select="fin">財報</button>
         <button class="btn" data-select="opt">期權/期貨</button>
         <button class="btn" data-select="lang">語言考試</button>
@@ -658,12 +658,30 @@
     }
 
     function course() {
+      if (state.selected === null) return null;
       return COURSES.find(c => c.id === state.selected) || COURSES[0];
     }
 
     function renderDetail() {
       const c = course();
       const code = document.getElementById("detail-code");
+      if (!c) {
+        code.textContent = "--";
+        code.style.background = "";
+        document.getElementById("detail-title").textContent = "選一個教學系統";
+        document.getElementById("detail-sub").textContent = "左側選課後會顯示完整路線與開啟方式。";
+        document.getElementById("detail-scope").textContent = "--";
+        document.getElementById("detail-time").textContent = "--";
+        document.getElementById("detail-status").textContent = "--";
+        document.getElementById("detail-outcome").textContent = "";
+        document.getElementById("detail-tags").innerHTML = "";
+        document.getElementById("detail-actions").innerHTML = "";
+        document.getElementById("route-list").innerHTML = "";
+        document.getElementById("compare-grid").innerHTML = COMPARE.map(item => `
+          <div class="compare-item"><b>${item[0]}</b><span>${item[1]}</span></div>
+        `).join("");
+        return;
+      }
       code.textContent = c.code;
       code.style.background = c.color;
       document.getElementById("detail-title").textContent = c.title;
@@ -690,8 +708,18 @@
       document.querySelector("[data-copy-single]").addEventListener("click", copyPlan);
     }
 
-    function copyPlan() {
+    function flashCopyResult(btn, text) {
+      if (!btn) return;
+      if (!btn.dataset.copyLabel) btn.dataset.copyLabel = btn.textContent;
+      btn.textContent = text;
+      clearTimeout(btn._copyTimer);
+      btn._copyTimer = setTimeout(() => { btn.textContent = btn.dataset.copyLabel; }, 1800);
+    }
+
+    function copyPlan(e) {
       const c = course();
+      if (!c) return;
+      const btn = e && e.currentTarget ? e.currentTarget : null;
       const lines = [];
       lines.push("# LEARN 選課路線");
       lines.push("");
@@ -712,13 +740,24 @@
       box.value = md;
       box.focus();
       box.select();
-      if (navigator.clipboard) navigator.clipboard.writeText(md).catch(() => {});
+      const fallbackCopy = () => {
+        let ok = false;
+        try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+        flashCopyResult(btn, ok ? "已複製" : "請按 Ctrl+C 複製");
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(md)
+          .then(() => flashCopyResult(btn, "已複製"))
+          .catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
     }
 
     document.getElementById("search").addEventListener("input", e => {
       state.query = e.target.value;
       const list = filteredCourses();
-      if (!list.some(c => c.id === state.selected) && list[0]) state.selected = list[0].id;
+      if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
       render();
     });
     document.getElementById("copy-plan").addEventListener("click", copyPlan);
