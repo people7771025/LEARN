@@ -52,6 +52,14 @@
 - OPT：`../OPT/index.html`，線上版 `https://people7771025.github.io/OPT/`
 - LANG：`../LANG/index.html`，線上版 `https://people7771025.github.io/LANG/`
 
+## 版面與互動要點（2026-07-03 之後）
+
+- **統計數字雙處渲染**：側欄（桌機）與 `main` 尾端 `.foot-info`（手機）都用 `data-stat="…"` 標記，`renderStats()` 用 `querySelectorAll` 同時更新，不要改回單一 id。
+- **手機重排**：≤1080px 時 `main` 轉 flex、`.top`/`.dashboard` 設 `display: contents`，用 `order` 排成 intro→課程→詳情→地圖→頁尾統計；側欄的統計與提示在手機隱藏（由 `.foot-info` 接手）。
+- **卡片點擊語意**：課程標題是真 `<button class="course-select">`，其 `::after` 覆蓋整張卡；卡內連結靠 z-index 蓋在覆蓋層上，已不用 stopPropagation。選卡後若焦點在列表內，會把焦點還給重繪後的同一顆按鈕。
+- **選課記憶**：localStorage key `learn.entry.v1`，只存 `{selected, filter}`，載入時驗證 id 有效才還原；壞值直接忽略。仍然不讀其他專案的 localStorage。
+- **複製學習路線**：無選課時按鈕 `disabled`（`renderDetail` 控制）。
+
 ## 注意
 
 - 不要把 FIN / OPT / LANG 的課程內容複製進 LEARN。

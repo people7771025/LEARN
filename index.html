@@ -4,7 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LEARN 教學系統入口</title>
-  <link rel="icon" href="data:,">
+  <meta name="description" content="FIN、OPT、LANG 三套自學系統的統一入口：財報判讀、期權期貨、語言考試。單檔 HTML、離線可開。">
+  <meta property="og:title" content="LEARN 教學系統入口">
+  <meta property="og:description" content="FIN、OPT、LANG 三套自學系統的統一入口：財報判讀、期權期貨、語言考試。">
+  <meta name="theme-color" content="#f4f3ef" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14171c" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%231c2128'/%3E%3Cg fill='none' stroke='%23f4f3ef' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 7.5C10.8 6.3 8.8 5.9 6 6.1V17c2.8-.2 4.8.2 6 1.4'/%3E%3Cpath d='M12 7.5c1.2-1.2 3.2-1.6 6-1.4V17c-2.8-.2-4.8.2-6 1.4'/%3E%3Cpath d='M12 7.5v10.9'/%3E%3C/g%3E%3C/svg%3E">
   <style>
     /* =========================================================
        LEARN — visual redesign (preview)
@@ -113,6 +118,7 @@
       display: grid;
       grid-template-columns: 304px minmax(0, 1fr);
       min-height: 100vh;
+      min-height: 100dvh;
     }
 
     /* ---------- Sidebar ---------- */
@@ -412,7 +418,8 @@
 
     .course-grid { display: grid; gap: var(--sp-3); }
 
-    /* Whole card is the click target; left rail carries course hue */
+    /* Whole card is the click target: the title is a real <button> whose
+       ::after overlay stretches across the card; links sit above it. */
     .course-card {
       position: relative;
       border: 1px solid var(--line);
@@ -421,9 +428,28 @@
       padding: var(--sp-4) var(--sp-4) var(--sp-4) calc(var(--sp-4) + 5px);
       display: grid;
       gap: var(--sp-3);
-      cursor: pointer;
       text-align: left;
       width: 100%;
+    }
+    .course-select {
+      padding: 0;
+      text-align: left;
+      font-size: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+      color: inherit;
+    }
+    .course-select::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: var(--r-md);
+      cursor: pointer;
+    }
+    .course-select:focus-visible { outline: none; }
+    .course-select:focus-visible::after {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
     }
     .course-card::before {
       content: "";
@@ -497,6 +523,7 @@
     .empty-state svg { width: 28px; height: 28px; color: var(--faint); margin-bottom: var(--sp-2); }
     .empty-state b { display: block; font-weight: var(--w-bold); color: var(--ink-2); margin-bottom: var(--sp-1); }
     .empty-state span { font-size: var(--fs-300); }
+    .empty-state .btn { margin-top: var(--sp-4); }
 
     /* ---------- Detail panel ---------- */
     .detail-title {
@@ -621,6 +648,25 @@
       tab-size: 2;
     }
 
+    /* ---------- Mobile footer info (desktop keeps stats/notice in sidebar) ---------- */
+    .foot-info { display: none; }
+    .foot-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-2); }
+    .foot-stats div {
+      padding: var(--sp-3) var(--sp-4);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--panel-2);
+    }
+    .foot-stats b {
+      display: block;
+      font-size: var(--fs-500);
+      font-family: var(--mono);
+      font-weight: var(--w-med);
+      letter-spacing: -0.01em;
+    }
+    .foot-stats span { color: var(--muted); font-size: var(--fs-200); letter-spacing: 0.02em; }
+    .foot-note { margin: var(--sp-3) 0 0; color: var(--muted); font-size: var(--fs-300); line-height: 1.55; }
+
     /* ---------- Toast (lives outside re-rendered subtree) ---------- */
     #toast {
       position: fixed;
@@ -663,7 +709,6 @@
     /* ---------- Focus (keyboard-only) ---------- */
     .btn:focus-visible,
     a.btn:focus-visible,
-    .course-card:focus-visible,
     .seg button:focus-visible,
     .search:focus-visible,
     textarea:focus-visible {
@@ -674,25 +719,39 @@
     aside .seg button:focus-visible {
       outline-color: #6fd0c2;
     }
-    .course-card:focus-visible { outline-offset: 1px; }
 
     /* ---------- Responsive ---------- */
     @media (max-width: 1080px) {
       .app { grid-template-columns: 1fr; }
-      aside { position: relative; height: auto; }
-      .top, .dashboard { grid-template-columns: 1fr; }
-      .seg { display: flex; overflow-x: auto; padding-bottom: var(--sp-1); gap: var(--sp-2); }
-      .seg button { min-width: 132px; }
+      aside { position: relative; height: auto; padding: var(--sp-4); }
+      .brand { padding-bottom: var(--sp-3); }
+      .side-label { margin-top: var(--sp-4); }
+      /* stats + notice move to the page footer on mobile */
+      .side-label-stats, .side-stat, aside .notice { display: none; }
+      .seg { display: flex; overflow-x: auto; padding-bottom: var(--sp-1); gap: var(--sp-2); scrollbar-width: none; }
+      .seg::-webkit-scrollbar { display: none; }
+      .seg button { min-width: 132px; width: auto; flex: 0 0 auto; }
+      /* single column: courses come right after the intro */
+      main { display: flex; flex-direction: column; gap: var(--sp-4); }
+      .top, .dashboard { display: contents; }
+      .intro { order: 1; }
+      .panel-courses { order: 2; }
+      #detail-panel { order: 3; }
+      .map { order: 4; }
+      .foot-info { display: block; order: 5; }
     }
     @media (max-width: 640px) {
       main { padding: var(--sp-4) var(--sp-4) var(--sp-6); }
       .panel { padding: var(--sp-4); }
       .intro h2 { font-size: 1.55rem; }
-      .course-top, .panel-head { display: block; }
-      .panel-head { display: flex; }
+      .course-top { display: block; }
       .course-code { margin-bottom: var(--sp-2); }
       .detail-grid, .compare { grid-template-columns: 1fr; }
-      .card-actions .btn, .quick-row .btn { width: 100%; }
+      .btn { min-height: 44px; }
+      .seg button { padding: 12px 14px; }
+      .card-actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .quick-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+      .quick-row .btn.primary { grid-column: 1 / -1; }
       .badge { margin-top: var(--sp-2); }
     }
 
@@ -758,18 +817,18 @@
       <label class="side-label" for="search">搜尋</label>
       <div class="side-search">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input class="search" id="search" type="search" aria-label="搜尋教學系統" placeholder="搜尋：財報、期權、日檢…">
+        <input class="search" id="search" type="search" placeholder="搜尋：財報、期權、日檢…">
       </div>
 
       <div class="side-label" id="filters-label">目標</div>
       <div class="seg" id="filters" role="group" aria-labelledby="filters-label"></div>
 
-      <div class="side-label">課程庫</div>
+      <div class="side-label side-label-stats">課程庫</div>
       <div class="side-stat">
-        <div><b id="stat-courses">0</b><span>教學系統</span></div>
-        <div><b id="stat-domains">0</b><span>學習領域</span></div>
-        <div><b id="stat-hours">0</b><span>完整時數</span></div>
-        <div><b id="stat-routes">0</b><span>考試/實戰路線</span></div>
+        <div><b data-stat="courses">0</b><span>教學系統</span></div>
+        <div><b data-stat="domains">0</b><span>學習領域</span></div>
+        <div><b data-stat="hours">0</b><span>完整時數</span></div>
+        <div><b data-stat="routes">0</b><span>考試/實戰路線</span></div>
       </div>
       <div class="notice">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg>
@@ -804,29 +863,29 @@
               <text x="160" y="108" text-anchor="middle">learn</text>
               <text x="276" y="108" text-anchor="middle">test / repeat</text>
             </g>
-            <text x="14" y="22" font-family="var(--mono)" font-size="10" fill="var(--faint)" letter-spacing="1">PATH</text>
+            <text x="14" y="22" font-family="var(--mono)" font-size="10" fill="var(--muted)" letter-spacing="1">PATH</text>
           </svg>
           <div class="map-caption">入口頁不取代課程內容；它負責把學習者帶到正確的系統。</div>
         </div>
       </section>
 
       <section class="dashboard">
-        <div class="panel">
+        <div class="panel panel-courses">
           <div class="panel-head">
             <div>
               <h2>教學系統</h2>
               <p id="result-label">全部課程</p>
             </div>
-            <span class="badge count" id="result-count" role="status" aria-live="polite">0 items</span>
+            <span class="badge count" id="result-count" role="status">0 套</span>
           </div>
-          <div class="course-grid" id="course-grid" role="list" aria-live="polite"></div>
+          <div class="course-grid" id="course-grid" role="list"></div>
         </div>
 
-        <div class="panel" id="detail-panel" aria-live="polite">
+        <div class="panel" id="detail-panel">
           <div class="detail-title">
             <div class="course-code" id="detail-code">--</div>
             <div>
-              <h2 id="detail-title" tabindex="-1">選一個教學系統</h2>
+              <h2 id="detail-title">選一個教學系統</h2>
               <p class="course-sub" id="detail-sub">左側選課後會顯示完整路線與開啟方式。</p>
             </div>
           </div>
@@ -865,6 +924,16 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <section class="panel foot-info" aria-label="課程庫統計">
+        <div class="foot-stats">
+          <div><b data-stat="courses">0</b><span>教學系統</span></div>
+          <div><b data-stat="domains">0</b><span>學習領域</span></div>
+          <div><b data-stat="hours">0</b><span>完整時數</span></div>
+          <div><b data-stat="routes">0</b><span>考試/實戰路線</span></div>
+        </div>
+        <p class="foot-note">本入口只做選課與導覽；各課程進度仍保存在原本專案自己的瀏覽器 localStorage。</p>
       </section>
     </main>
   </div>
@@ -931,7 +1000,7 @@
         onlineUrl: "https://people7771025.github.io/LANG/",
         scope: "96 Exam Ch + 80 Listening",
         hours: 520,
-        status: "本機完成",
+        status: "完成",
         routes: 2,
         outcome: "想走完整語言考試流程：英文達 C1/TOEFL/IELTS 目標，日文至少通過 N2 並銜接 N1。",
         tags: ["GEPT C1", "全民英檢", "TOEFL", "托福", "IELTS", "雅思", "JLPT N2", "日檢", "Listening", "Dictation"],
@@ -966,6 +1035,24 @@
       selected: "fin"
     };
 
+    /* ---- Remember last selection/filter (LEARN's own key only) ---- */
+    const STORE_KEY = "learn.entry.v1";
+    function saveState() {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify({ selected: state.selected, filter: state.filter }));
+      } catch (_) { /* private mode etc. — remembering is optional */ }
+    }
+    (function restoreState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+        if (!saved) return;
+        if (FILTERS.some(f => f.id === saved.filter)) state.filter = saved.filter;
+        if (COURSES.some(c => c.id === saved.selected)) state.selected = saved.selected;
+        const list = filteredCourses();
+        if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
+      } catch (_) { /* corrupt value — fall back to defaults */ }
+    })();
+
     function esc(s) {
       return String(s).replace(/[&<>"']/g, ch => (
         { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
@@ -991,10 +1078,12 @@
     }
 
     function renderStats() {
-      document.getElementById("stat-courses").textContent = COURSES.length;
-      document.getElementById("stat-domains").textContent = new Set(COURSES.map(c => c.category)).size;
-      document.getElementById("stat-hours").textContent = COURSES.reduce((sum, c) => sum + c.hours, 0) + "h";
-      document.getElementById("stat-routes").textContent = COURSES.reduce((sum, c) => sum + c.routes, 0);
+      // Stats render into both the sidebar (desktop) and the footer block (mobile).
+      const set = (key, val) => document.querySelectorAll(`[data-stat="${key}"]`).forEach(el => el.textContent = val);
+      set("courses", COURSES.length);
+      set("domains", new Set(COURSES.map(c => c.category)).size);
+      set("hours", COURSES.reduce((sum, c) => sum + c.hours, 0) + "h");
+      set("routes", COURSES.reduce((sum, c) => sum + c.routes, 0));
     }
 
     function renderFilters() {
@@ -1007,6 +1096,7 @@
           state.filter = btn.dataset.filter;
           const list = filteredCourses();
           if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
+          saveState();
           renderFilters();
           renderQuickActions();
           renderCourses();
@@ -1030,6 +1120,7 @@
         state.query = "";
         const search = document.getElementById("search");
         if (search) search.value = "";
+        saveState();
         render();
       }));
     }
@@ -1038,7 +1129,7 @@
       const list = filteredCourses();
       const label = FILTERS.find(f => f.id === state.filter)?.label || "全部教學";
       document.getElementById("result-label").textContent = label + (state.query ? " · 搜尋：" + state.query : "");
-      document.getElementById("result-count").textContent = list.length + " items";
+      document.getElementById("result-count").textContent = list.length + " 套";
 
       const chipIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/></svg>`;
       const grid = document.getElementById("course-grid");
@@ -1046,12 +1137,12 @@
         const rail = RAIL[c.id] || "var(--accent)";
         const sel = state.selected === c.id;
         return `
-        <article class="course-card ${sel ? "active" : ""}" style="--rail:${rail}" role="listitem" tabindex="0" data-card="${c.id}"${sel ? ' aria-current="true"' : ""} aria-label="${esc(c.title)}">
+        <article class="course-card ${sel ? "active" : ""}" style="--rail:${rail}" role="listitem" data-card="${c.id}"${sel ? ' aria-current="true"' : ""}>
           <div class="course-top">
             <div class="course-id">
               <div class="course-code">${esc(c.code)}</div>
               <div>
-                <div class="course-title">${esc(c.title)}</div>
+                <div class="course-title"><button class="course-select" type="button">${esc(c.title)}</button></div>
                 <div class="course-sub">${esc(c.subtitle)}</div>
               </div>
             </div>
@@ -1063,8 +1154,8 @@
             <span class="chip">${esc(c.status)}</span>
           </div>
           <div class="card-actions">
-            <a class="btn primary" href="${esc(c.localUrl)}" target="_blank" rel="noreferrer" data-stop>開啟課程</a>
-            ${c.onlineUrl ? `<a class="btn blue" href="${esc(c.onlineUrl)}" target="_blank" rel="noreferrer" data-stop>固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
+            <a class="btn primary" href="${esc(c.localUrl)}" target="_blank" rel="noreferrer">開啟課程</a>
+            ${c.onlineUrl ? `<a class="btn blue" href="${esc(c.onlineUrl)}" target="_blank" rel="noreferrer">固定網址</a>` : `<span class="btn disabled">尚無固定網址</span>`}
           </div>
         </article>`;
       }).join("") : `
@@ -1072,24 +1163,35 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <b>找不到符合條件的教學系統</b>
           <span>換一個關鍵字或選回全部教學。</span>
+          <div><button class="btn" id="empty-reset" type="button">顯示全部課程</button></div>
         </div>`;
 
-      // Whole card selects; inner links opt out via [data-stop] + stopPropagation.
+      // The title <button> selects; its ::after overlay stretches over the
+      // whole card, while links sit above it (z-index) and work normally.
       grid.querySelectorAll("[data-card]").forEach(card => {
-        const select = () => {
+        card.querySelector(".course-select").addEventListener("click", () => {
           if (state.selected === card.dataset.card) return;
           state.selected = card.dataset.card;
+          saveState();
+          const hadFocus = grid.contains(document.activeElement);
           renderQuickActions();
           renderCourses();
           renderDetail();
-        };
-        card.addEventListener("click", select);
-        card.addEventListener("keydown", e => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(); }
+          if (hadFocus) {
+            // grid was re-rendered: put focus back on the same card's button
+            const fresh = grid.querySelector(`[data-card="${state.selected}"] .course-select`);
+            if (fresh) fresh.focus({ preventScroll: true });
+          }
         });
       });
-      grid.querySelectorAll("[data-stop]").forEach(a => {
-        a.addEventListener("click", e => e.stopPropagation());
+      const reset = document.getElementById("empty-reset");
+      if (reset) reset.addEventListener("click", () => {
+        state.filter = "all";
+        state.query = "";
+        state.selected = COURSES[0].id;
+        document.getElementById("search").value = "";
+        saveState();
+        render();
       });
     }
 
@@ -1110,6 +1212,7 @@
         ).join("");
       };
 
+      document.getElementById("copy-plan").disabled = !c;
       if (!c) {
         code.textContent = "--";
         code.style.removeProperty("--rail");
@@ -1228,6 +1331,7 @@
         state.query = val;
         const list = filteredCourses();
         if (!list.some(c => c.id === state.selected)) state.selected = list[0] ? list[0].id : null;
+        saveState();
         renderQuickActions();
         renderCourses();
         renderDetail();
