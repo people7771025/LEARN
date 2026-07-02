@@ -12,6 +12,7 @@
   - 選課記憶：localStorage `learn.entry.v1`（只存 LEARN 自己的 selected+filter）
   - 無障礙：卡片標題改真按鈕＋整卡覆蓋層、移除多餘 aria-live、手機觸控 44px+
 - Playwright 全流程驗證：桌機/手機/320px/深色/焦點/持久化/複製 toast 全過，console 0 錯誤。
+- ⚠️ **線上版尚未部署成功**：`f4a95a5` 推送後 GitHub Pages 連三次失敗（建置成功、部署卡 `deployment_queued` 10 分鐘逾時；GitHub 狀態頁無事故，repo 內容無問題）。線上仍是 6/25 舊版，功能正常。下一步：再觸發部署（push 即觸發）；若持續失敗，考慮 Pages 停用再啟用（需使用者同意）。
 
 ## 下一步
 
